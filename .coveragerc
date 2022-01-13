@@ -1,0 +1,11 @@
+[run]
+source =
+    protocol
+
+[paths]
+source =
+    protocol
+
+[report]
+show_missing = true
+precision = 2
