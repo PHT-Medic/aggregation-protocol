@@ -31,8 +31,7 @@ def combine_sharing_key_shares(shares: List[KeyShare]) -> ECPrivateKey:
 
 
 def _process_chunked_shares(chunked_shares: List[List[Tuple[int, bytes]]]) -> bytes:
-
-
+    pass
 
 
 def _process_key_segment(key_segment: KeyShare) -> List[Tuple[int, bytes]]:
