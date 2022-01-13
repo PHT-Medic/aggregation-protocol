@@ -1,5 +1,5 @@
 import math
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Optional
 
 from Crypto.Protocol.SecretSharing import Shamir
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKeyWithSerialization as ECPubKey
@@ -7,6 +7,18 @@ from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from pydantic import BaseModel
+
+
+class ClientKeyBroadCast(BaseModel):
+    """
+    The client key broadcast message is sent by the client to the server.
+    The client broadcasts the public keys and an optional signature of the public keys.
+    Keys are encoded in hex format
+    """
+    cipher_public_key: str
+    sharing_public_key: str
+    signature: Optional[str] = None
 
 
 class ClientKeys:
@@ -44,15 +56,17 @@ class ClientKeys:
         else:
             self.sharing_key = self._process_key_parameter(sharing_key)
 
-    def _process_key_parameter(self, input_key: Union[ECPrivateKey, str]) -> ECPrivateKey:
-        # parse from hex string
-        if isinstance(input_key, str):
-            return self._load_private_key_from_hex(input_key)
-        # return instance directly
-        elif isinstance(input_key, ECPrivateKey):
-            return input_key
-        else:
-            raise ValueError(f"Invalid key format: {type(input_key)}")
+    def key_broadcast(self) -> ClientKeyBroadCast:
+
+        broadcast_dict = {
+            "cipher_public_key": self.hex_cipher_key_public,
+            "sharing_public_key": self.hex_sharing_key_public
+        }
+        if self.signing_key and self.verification_keys:
+            raise NotImplementedError("Signing and verification keys not implemented")
+            broadcast_dict["signature"] = self.sign_keys()
+        broadcast = ClientKeyBroadCast(**broadcast_dict)
+        return broadcast
 
     def create_key_shares(self, n: int, t: int = 3) -> List[List[Tuple[int, bytes]]]:
         sharing_key_bytes = bytes.fromhex(self.hex_sharing_key)
@@ -107,6 +121,16 @@ class ClientKeys:
             ).derive(shared_key)
             return derived_key
         return shared_key
+
+    def _process_key_parameter(self, input_key: Union[ECPrivateKey, str]) -> ECPrivateKey:
+        # parse from hex string
+        if isinstance(input_key, str):
+            return self._load_private_key_from_hex(input_key)
+        # return instance directly
+        elif isinstance(input_key, ECPrivateKey):
+            return input_key
+        else:
+            raise ValueError(f"Invalid key format: {type(input_key)}")
 
     @property
     def hex_signing_key(self) -> str:

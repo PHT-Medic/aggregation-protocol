@@ -76,3 +76,14 @@ def test_client_keys_hex():
     assert keys.hex_cipher_key == private_hex_1
     assert keys.hex_sharing_key == private_hex_2
 
+
+def test_client_keys_key_broadcast():
+    keys = ClientKeys()
+    broadcast = keys.key_broadcast()
+
+    assert broadcast.cipher_public_key == keys.hex_cipher_key_public
+    assert broadcast.sharing_public_key == keys.hex_sharing_key_public
+
+    with pytest.raises(NotImplementedError):
+        keys = ClientKeys(signing_key=ec.generate_private_key(ec.SECP384R1()), verification_keys=["1", "2"])
+        keys.key_broadcast()
