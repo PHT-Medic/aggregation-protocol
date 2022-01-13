@@ -22,7 +22,7 @@ class ClientKeys:
                  verification_keys: List[Union[ECPubKey, str]] = None):
 
         # validate signing and verification key arguments
-        if not (signing_key and verification_keys):
+        if not (signing_key or verification_keys):
             print("No signing of verification keys given, protocol not secure against adversarial server")
         elif signing_key and not verification_keys:
             raise ValueError("Signing key given but no verification keys")
@@ -165,5 +165,5 @@ class ClientKeys:
     def _serialize_public_key_to_hex(key: ECPubKey) -> str:
         return key.public_bytes(
             encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.PKCS1
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
         ).hex()
