@@ -10,6 +10,17 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from pydantic import BaseModel
 
 
+class ShareSegment(BaseModel):
+    index: int
+    hex_share: str
+
+
+class KeyShare(BaseModel):
+    user_id: Union[int, str]
+    key_share: str
+    key_segments: List[ShareSegment]
+
+
 class ClientKeyBroadCast(BaseModel):
     """
     The client key broadcast message is sent by the client to the server.
