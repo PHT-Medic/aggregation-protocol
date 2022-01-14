@@ -1,5 +1,5 @@
 import pytest
-from protocol.models.keys import ClientKeys
+from protocol.models.client_keys import ClientKeys
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKeyWithSerialization as ECPrivateKey
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization, hashes

@@ -9,27 +9,21 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from pydantic import BaseModel
 
-
-class ShareSegment(BaseModel):
-    index: int
-    hex_share: str
+from protocol.models.client_messages import ClientKeyBroadCast
+from protocol.models import HexString
+from protocol.secrets import create_key_shares
 
 
 class KeyShare(BaseModel):
-    user_id: Union[int, str]
-    key_share: str
-    key_segments: List[ShareSegment]
+    """
+    A key share for a participant
+    """
+    recipient: Union[int, str]
+    segments: List[HexString]
 
 
-class ClientKeyBroadCast(BaseModel):
-    """
-    The client key broadcast message is sent by the client to the server.
-    The client broadcasts the public keys and an optional signature of the public keys.
-    Keys are encoded in hex format
-    """
-    cipher_public_key: str
-    sharing_public_key: str
-    signature: Optional[str] = None
+class KeyShares(BaseModel):
+    shares: List[KeyShare]
 
 
 class ClientKeys:
@@ -46,7 +40,7 @@ class ClientKeys:
 
         # validate signing and verification key arguments
         if not (signing_key or verification_keys):
-            print("No signing of verification keys given, protocol not secure against adversarial server")
+            print("No signing or verification keys given, protocol not secure against adversarial server")
         elif signing_key and not verification_keys:
             raise ValueError("Signing key given but no verification keys")
         elif not signing_key and verification_keys:
@@ -79,21 +73,9 @@ class ClientKeys:
         broadcast = ClientKeyBroadCast(**broadcast_dict)
         return broadcast
 
-    def create_key_shares(self, n: int, t: int = 3) -> List[List[Tuple[int, bytes]]]:
-        sharing_key_bytes = bytes.fromhex(self.hex_sharing_key)
-        blocks = math.floor(len(sharing_key_bytes) / 16.0)
-        block_shares = []
-        for i in range(blocks):
-            key_block = sharing_key_bytes[i * 16: (i + 1) * 16]
-            block = self._share_secret_pycryptodome(key_block, t, n)
-            block_shares.append(block)
-        # Add the incomplete block
-        remainder = sharing_key_bytes[blocks * 16:]
-        pad_size = 16 - len(remainder)
-        remainder += b"\0" * pad_size
-        block_shares.append(self._share_secret_pycryptodome(remainder, t, n))
-
-        return block_shares
+    def create_key_shares(self, n: int, k: int = 3) -> KeyShares:
+        shares = create_key_shares(self.hex_sharing_key, n, k)
+        return shares
 
     @staticmethod
     def _share_secret_pycryptodome(secret: bytes, t: int, n: int):
