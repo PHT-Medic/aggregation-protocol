@@ -64,7 +64,7 @@ def create_seed_shares(seed: str, n: int, k: int = 3) -> List[SeedShare]:
     # create the secret shares
     secret_shares = Shamir.split(k=k, n=n, secret=seed_bytes, ssss=False)
     # convert to list of SeedShare models
-    seed_shares = [SeedShare(recipient=i, seed=share.hex()) for i, share in secret_shares]
+    seed_shares = [SeedShare(shamir_index=i, seed=share.hex()) for i, share in secret_shares]
 
     return seed_shares
 
@@ -96,8 +96,8 @@ def combine_seed_shares(shares: List[SeedShare]) -> bytes:
     :param shares:
     :return:
     """
-    secret_shares = [(share.recipient, share.seed.get_bytes()) for share in shares]
-    secret = Shamir.combine(secret_shares)
+    secret_shares = [(share.shamir_index, share.seed.get_bytes()) for share in shares]
+    secret = Shamir.combine(secret_shares, ssss=False)
     return secret
 
 
@@ -126,7 +126,7 @@ def _process_key_segment(key_share: KeyShare) -> List[Tuple[int, bytes]]:
     :param key_share: a users key share
     :return: list of tuples representing the shared secrets usy by pycryptodome
     """
-    shamir_shares = [(key_share.recipient, segment.get_bytes()) for segment in key_share.segments]
+    shamir_shares = [(key_share.shamir_index, segment.get_bytes()) for segment in key_share.segments]
     return shamir_shares
 
 
@@ -148,7 +148,7 @@ def _distribute_chunked_shares(chunked_shares: List[List[Tuple[int, bytes]]]) ->
     # convert the dictionary to a list of Keyshare
     key_shares = []
     for user_id, share_segment in segment_dict.items():
-        key_shares.append(KeyShare(recipient=user_id, segments=share_segment))
+        key_shares.append(KeyShare(shamir_index=user_id, segments=share_segment))
 
     return key_shares
 

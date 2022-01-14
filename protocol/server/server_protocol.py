@@ -3,7 +3,7 @@ from typing import List
 from protocol.models.server_messages import ServerKeyBroadcast, BroadCastClientKeys
 
 
-class ServerAggregationProtocol:
+class ServerProtocol:
 
-    def broadcast_keys(self, client_keys: List[BroadCastClientKeys]):
+    def broadcast_keys(self, client_keys: List[BroadCastClientKeys]) -> ServerKeyBroadcast:
         return ServerKeyBroadcast(participants=client_keys)

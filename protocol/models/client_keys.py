@@ -68,8 +68,10 @@ class ClientKeys:
             "sharing_public_key": self.hex_sharing_key_public
         }
         if self.signing_key and self.verification_keys:
+            # todo
+            # broadcast_dict["signature"] = self.sign_keys()
             raise NotImplementedError("Signing and verification keys not implemented")
-            broadcast_dict["signature"] = self.sign_keys()
+
         broadcast = ClientKeyBroadCast(**broadcast_dict)
         return broadcast
 
