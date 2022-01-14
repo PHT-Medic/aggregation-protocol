@@ -73,34 +73,9 @@ class ClientKeys:
         broadcast = ClientKeyBroadCast(**broadcast_dict)
         return broadcast
 
-    def create_key_shares(self, n: int, k: int = 3) -> KeyShares:
+    def create_key_shares(self, n: int, k: int = 3) -> List[KeyShare]:
         shares = create_key_shares(self.hex_sharing_key, n, k)
         return shares
-
-    @staticmethod
-    def _share_secret_pycryptodome(secret: bytes, t: int, n: int):
-        if len(secret) < 16:
-            padded_secret = secret + b"\0" * (16 - len(secret))
-            shares = Shamir.split(t, n, padded_secret, ssss=False)
-            return shares
-        shares = Shamir.split(t, n, secret, ssss=False)
-        return shares
-
-    @staticmethod
-    def _combine_secret_pycryptodome(shares: List[Tuple[int, bytes]]) -> bytes:
-        secret = Shamir.combine(shares, ssss=False)
-        return secret
-
-    def recover_sharing_key(self, shares: List[List[Tuple[int, bytes]]]) -> str:
-        recovered = ""
-        for block in shares:
-            recovered += self._combine_secret_pycryptodome(block).hex()
-
-        # remove padding (last 14 bytes/28 hex chars in current implementation)
-        # TODO improve this hack
-        recovered = recovered[:-28]
-
-        return recovered
 
     def derive_shared_key(self, private_key: ECPrivateKey, public_key: ECPubKey,
                           data: bytes = None) -> bytes:
