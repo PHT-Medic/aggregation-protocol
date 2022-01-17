@@ -73,7 +73,7 @@ def test_combine_key_shares_invalid_shares():
 
 
 def test_mask_seed_sharing():
-    seed = os.urandom(16).hex()
+    seed = os.urandom(4).hex()
 
     int_seed = int(seed, 16)
 
@@ -86,7 +86,7 @@ def test_mask_seed_sharing():
 
 
 def test_create_secret_shares():
-    seed = os.urandom(16).hex()
+    seed = os.urandom(4).hex()
     keys = ClientKeys()
     shares = create_secret_shares(keys.hex_sharing_key, seed, 10, 3)
 

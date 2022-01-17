@@ -2,6 +2,7 @@ from typing import Optional, List, Union
 
 from pydantic import BaseModel
 from protocol.models.client_messages import ClientKeyBroadCast
+from protocol.models import HexString
 
 
 class BroadCastClientKeys(BaseModel):
@@ -15,3 +16,17 @@ class ServerKeyBroadcast(BaseModel):
     """
 
     participants: List[BroadCastClientKeys]
+
+
+class UserCipher(BaseModel):
+    """
+    Broadcast the ciphers of users registered in round 1 of the protocol.
+    """
+
+    sender: Union[int, str]
+    receiver: Union[int, str]
+    cipher: HexString
+
+
+class ServerCipherBroadcast(BaseModel):
+    ciphers: List[UserCipher]

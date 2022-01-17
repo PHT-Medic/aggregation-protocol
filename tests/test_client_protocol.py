@@ -7,16 +7,13 @@ from protocol.models.client_keys import ClientKeys
 @pytest.fixture
 def key_broadcast():
     protocol = ClientProtocol()
-    client_keys, msg = protocol.setup()
-    broadcasts = [BroadCastClientKeys(
-        user_id="test",
-        broadcast=msg
-    )]
-    keys = [client_keys]
-    for i in range(4):
+
+    broadcasts = []
+    keys = []
+    for i in range(5):
         user_keys, msg = protocol.setup()
         client_broadcast = BroadCastClientKeys(
-            user_id=str(i),
+            user_id=f"user-{i}",
             broadcast=msg
         )
         broadcasts.append(client_broadcast)
@@ -24,6 +21,21 @@ def key_broadcast():
 
     server_broadcast = ServerKeyBroadcast(participants=broadcasts)
     return server_broadcast, keys
+
+
+@pytest.fixture
+def cipher_broadcast(key_broadcast):
+    protocol = ClientProtocol()
+    broadcast, keys = key_broadcast
+    seeds = []
+    share_messages = []
+    for i, key in enumerate(keys):
+        seed, msg = protocol.process_key_broadcast(f"user-{i}", keys[0], broadcast=broadcast)
+        seeds.append(seed)
+        share_messages.append(msg)
+
+    return broadcast, keys, seeds, share_messages
+
 
 
 def test_protocol_setup():
@@ -73,3 +85,16 @@ def test_share_keys(key_broadcast):
 
     with pytest.raises(ValueError):
         seed, msg = protocol.process_key_broadcast("test", keys[0], wrong_num_keys)
+
+
+def test_masking(cipher_broadcast):
+    broadcast, keys, seeds, share_messages = cipher_broadcast
+
+    print(broadcast.participants)
+    user_key_0 = keys[0]
+    user_key_1 = keys[1]
+
+
+
+
+

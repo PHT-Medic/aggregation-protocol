@@ -5,12 +5,13 @@ from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from cryptography.hazmat.primitives import hashes
 
 
-def derive_shared_key(private_key: EllipticCurvePrivateKey, public_key: EllipticCurvePublicKey) -> bytes:
+def derive_shared_key(private_key: EllipticCurvePrivateKey, public_key: EllipticCurvePublicKey,
+                      length: int = 32) -> bytes:
     shared_key = private_key.exchange(ec.ECDH(), public_key)
 
     derived_key = HKDF(
         algorithm=hashes.SHA256(),
-        length=32,
+        length=length,
         salt=None,
         info=None,
     ).derive(shared_key)

@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from typing import Union, List, Optional
 from protocol.models import HexString
+import numpy as np
 
 
 class KeyShare(BaseModel):
@@ -42,3 +43,13 @@ class EncryptedCipher(BaseModel):
     cipher: HexString
 
 
+class SharedMask(BaseModel):
+    """
+    A shared mask for a participant
+    """
+    sender: str
+    recipient: str
+    mask: np.ndarray
+
+    class Config:
+        arbitrary_types_allowed = True

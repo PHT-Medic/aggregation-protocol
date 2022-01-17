@@ -10,6 +10,7 @@ from protocol.models.secrets import SecretShares, KeyShare, SeedShare
 NUM_KEY_CHUNKS = 20
 SHAMIR_SIZE = 16
 KEY_BYTES = 306
+SEED_LENGTH = 4
 
 
 def create_secret_shares(hex_sharing_key: str, hex_seed: str, n: int, k: int = 3) -> SecretShares:
@@ -58,9 +59,11 @@ def create_seed_shares(seed: str, n: int, k: int = 3) -> List[SeedShare]:
 
     seed_bytes = bytes.fromhex(seed)
 
-    if len(seed_bytes) != SHAMIR_SIZE:
-        raise ValueError(f"Seed must be {SHAMIR_SIZE} bytes long (32 hex characters).")
+    if len(seed_bytes) != SEED_LENGTH:
+        raise ValueError(f"Seed must be {SEED_LENGTH} bytes long (8 hex characters). Found length {len(seed_bytes)}.")
 
+    # todo remove for better shamir solution
+    seed_bytes = seed_bytes + b"\0" * (SHAMIR_SIZE - SEED_LENGTH)
     # create the secret shares
     secret_shares = Shamir.split(k=k, n=n, secret=seed_bytes, ssss=False)
     # convert to list of SeedShare models
@@ -98,6 +101,9 @@ def combine_seed_shares(shares: List[SeedShare]) -> bytes:
     """
     secret_shares = [(share.shamir_index, share.seed.get_bytes()) for share in shares]
     secret = Shamir.combine(secret_shares, ssss=False)
+    # todo remove for better shamir solution
+    # remove padding
+    secret = secret[:SEED_LENGTH]
     return secret
 
 

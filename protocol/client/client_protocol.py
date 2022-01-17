@@ -4,7 +4,7 @@ from typing import Tuple
 from protocol.models import HexString
 from protocol.models.client_keys import ClientKeys
 from protocol.models.secrets import SecretShares, EncryptedCipher
-from protocol.models.server_messages import ServerKeyBroadcast
+from protocol.models.server_messages import ServerKeyBroadcast, ServerCipherBroadcast
 from protocol.secrets.secret_sharing import create_secret_shares
 from protocol.models.client_messages import ClientKeyBroadCast, ShareKeysMessage
 from protocol.secrets.ciphers import generate_encrypted_cipher
@@ -34,8 +34,11 @@ class ClientProtocol:
 
         return seed, response
 
-    def share_keys(self,
-                   user_id: str,
+    def process_cipher_broadcast(self, user_id: str, keys: ClientKeys, broadcast: ServerCipherBroadcast):
+        pass
+
+    @staticmethod
+    def share_keys(user_id: str,
                    client_keys: ClientKeys,
                    secret_shares: SecretShares,
                    broadcast: ServerKeyBroadcast,
