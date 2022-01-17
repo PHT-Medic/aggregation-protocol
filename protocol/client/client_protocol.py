@@ -1,15 +1,15 @@
 import os
-from typing import Tuple
+from typing import Tuple, List
 
 from protocol.models import HexString
 from protocol.models.client_keys import ClientKeys
 from protocol.models.secrets import SecretShares, EncryptedCipher
-from protocol.models.server_messages import ServerKeyBroadcast, ServerCipherBroadcast
+from protocol.models.server_messages import ServerKeyBroadcast, ServerCipherBroadcast, BroadCastClientKeys
 from protocol.secrets.secret_sharing import create_secret_shares
-from protocol.models.client_messages import ClientKeyBroadCast, ShareKeysMessage
+from protocol.models.client_messages import ClientKeyBroadCast, ShareKeysMessage, MaskedInput
 from protocol.secrets.ciphers import generate_encrypted_cipher
 from protocol.secrets.util import load_public_key
-from protocol.secrets.masking import generate_random_seed
+from protocol.secrets.masking import generate_random_seed, create_mask
 
 
 class ClientProtocol:
@@ -34,8 +34,27 @@ class ClientProtocol:
 
         return seed, response
 
-    def process_cipher_broadcast(self, user_id: str, keys: ClientKeys, broadcast: ServerCipherBroadcast):
-        pass
+    def process_cipher_broadcast(self,
+                                 user_id: str,
+                                 keys: ClientKeys,
+                                 broadcast: ServerCipherBroadcast,
+                                 participants: List[BroadCastClientKeys],
+                                 mask_size: int,
+                                 seed: str,
+                                 ) -> MaskedInput:
+
+        # filter round 2 participants
+        round_2_ids = [cipher.sender for cipher in broadcast.ciphers]
+        round_2_participants = [p for p in participants if p.user_id in round_2_ids]
+        # generate the mask for the round 2 participants
+        mask = create_mask(user_id=user_id,
+                           user_keys=keys,
+                           participants=round_2_participants,
+                           n_params=mask_size,
+                           seed=seed
+                           )
+
+        return MaskedInput(user_id=user_id, masked_input=list(mask))
 
     @staticmethod
     def share_keys(user_id: str,

@@ -22,3 +22,12 @@ class ShareKeysMessage(BaseModel):
     """
     user_id: str
     ciphers: List[EncryptedCipher]
+
+
+class MaskedInput(BaseModel):
+    """
+    The masked input message is sent by the client to the server.
+    The client sends the masked input to the server.
+    """
+    user_id: str
+    masked_input: List[float]

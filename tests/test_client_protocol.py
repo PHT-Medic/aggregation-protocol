@@ -1,6 +1,6 @@
 import pytest
 from protocol import ClientProtocol
-from protocol.models.server_messages import ServerKeyBroadcast, BroadCastClientKeys
+from protocol.models.server_messages import ServerKeyBroadcast, BroadCastClientKeys, ServerCipherBroadcast, UserCipher
 from protocol.models.client_keys import ClientKeys
 
 
@@ -35,7 +35,6 @@ def cipher_broadcast(key_broadcast):
         share_messages.append(msg)
 
     return broadcast, keys, seeds, share_messages
-
 
 
 def test_protocol_setup():
@@ -94,7 +93,27 @@ def test_masking(cipher_broadcast):
     user_key_0 = keys[0]
     user_key_1 = keys[1]
 
+    protocol = ClientProtocol()
 
+    user_cyphers = []
+    for i in range(5):
+        user_cyphers.append(
+            UserCipher(
+                sender=f"user-{i}",
+                receiver="user-0",
+                cipher="abab"
+            )
+        )
+    server_broadcast = ServerCipherBroadcast(
+        ciphers=user_cyphers
+    )
 
+    mask = protocol.process_cipher_broadcast(user_id="user-0",
+                                             keys=user_key_0,
+                                             participants=broadcast.participants,
+                                             mask_size=100,
+                                             broadcast=server_broadcast,
+                                             seed=seeds[0]
+                                             )
 
-
+    assert len(mask.masked_input) == 100
