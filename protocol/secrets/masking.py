@@ -11,10 +11,29 @@ from protocol.secrets.key_agreement import derive_shared_key
 from protocol.secrets.util import load_public_key
 
 
+def create_mask(user_id: str, user_keys: ClientKeys, participants: List[BroadCastClientKeys], seed: str,
+                n_params: int) -> np.ndarray:
+    private_mask = _generate_private_mask(seed, n_params)
+    user_masks = generate_user_masks(user_id, user_keys, participants, n_params)
+
+    for mask in user_masks:
+        private_mask += mask.mask
+
+    return private_mask
+
+
+def _generate_private_mask(seed: str, n_items: int) -> np.ndarray:
+    seed = integer_seed_from_hex(seed)
+    np.random.seed(seed)
+    mask = np.random.random(n_items)
+    return mask
+
+
 def generate_user_masks(user_id: str, user_keys: ClientKeys, participants: List[BroadCastClientKeys],
                         n_params: int) -> List[SharedMask]:
     user_index = len(participants)
     masks = []
+    # todo for efficiency later sum up all masks and return only the numpy array
     for i, participant in enumerate(participants):
         # set the user index when the id matches the broadcast
         if participant.user_id == user_id:

@@ -1,12 +1,8 @@
-import math
-from typing import Union, List, Tuple, Optional
-
-from Crypto.Protocol.SecretSharing import Shamir
+from typing import Union, List
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKeyWithSerialization as ECPubKey
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKeyWithSerialization as ECPrivateKey
-from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 from pydantic import BaseModel
 
 from protocol.models.client_messages import ClientKeyBroadCast
