@@ -79,19 +79,6 @@ class ClientKeys:
         shares = create_key_shares(self.hex_sharing_key, n, k)
         return shares
 
-    def derive_shared_key(self, private_key: ECPrivateKey, public_key: ECPubKey,
-                          data: bytes = None) -> bytes:
-        shared_key = private_key.exchange(ec.ECDH(), public_key)
-        if data:
-            derived_key = HKDF(
-                algorithm=hashes.SHA256(),
-                length=32,
-                salt=None,
-                info=data
-            ).derive(shared_key)
-            return derived_key
-        return shared_key
-
     def _process_key_parameter(self, input_key: Union[ECPrivateKey, str]) -> ECPrivateKey:
         # parse from hex string
         if isinstance(input_key, str):

@@ -24,10 +24,21 @@ class SecretShares(BaseModel):
     seed_shares: List[SeedShare]
 
 
-class ShareKeysMessage(BaseModel):
+class Cipher(BaseModel):
     """
-    Message sent to the participants to share their keys
+    A cipher for a participant
     """
-    user_id: str
+    sender: str
     recipient: str
-    secret_shares: SecretShares
+    seed_share: SeedShare
+    key_share: KeyShare
+
+
+class EncryptedCipher(BaseModel):
+    """
+    An encrypted cipher for a participant
+    """
+    recipient: str
+    cipher: HexString
+
+

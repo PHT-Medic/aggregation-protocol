@@ -2,6 +2,8 @@ from typing import Optional, List, Union
 
 from pydantic import BaseModel
 
+from protocol.models.secrets import EncryptedCipher
+
 
 class ClientKeyBroadCast(BaseModel):
     """
@@ -12,3 +14,11 @@ class ClientKeyBroadCast(BaseModel):
     cipher_public_key: str
     sharing_public_key: str
     signature: Optional[str] = None
+
+
+class ShareKeysMessage(BaseModel):
+    """
+    Encrypted ciphers containing the shared keys are sent to the server.
+    """
+    user_id: str
+    ciphers: List[EncryptedCipher]
