@@ -1,5 +1,5 @@
 import pytest
-from protocol.client import ClientProtocol
+from protocol import ClientProtocol
 from protocol.models.server_messages import ServerKeyBroadcast, BroadCastClientKeys
 from protocol.models.client_keys import ClientKeys
 
@@ -8,16 +8,19 @@ from protocol.models.client_keys import ClientKeys
 def key_broadcast():
     protocol = ClientProtocol()
     client_keys, msg = protocol.setup()
-    broadcasts = [BroadCastClientKeys(user_id="test", broadcast=client_keys.key_broadcast())]
+    broadcasts = [BroadCastClientKeys(
+        user_id="test",
+        broadcast=msg
+    )]
     keys = [client_keys]
     for i in range(4):
-        key = ClientKeys()
-        keys.append(key)
+        user_keys, msg = protocol.setup()
         client_broadcast = BroadCastClientKeys(
             user_id=str(i),
-            broadcast=key.key_broadcast()
+            broadcast=msg
         )
         broadcasts.append(client_broadcast)
+        keys.append(user_keys)
 
     server_broadcast = ServerKeyBroadcast(participants=broadcasts)
     return server_broadcast, keys
@@ -34,7 +37,7 @@ def test_protocol_process_keys_from_server(key_broadcast):
     protocol = ClientProtocol()
     server_broadcast, keys = key_broadcast
 
-    seed = protocol.process_key_broadcast("test", keys[0], server_broadcast)
+    seed, response = protocol.process_key_broadcast("test", keys[0], server_broadcast)
 
     # error too few participants
     too_few = server_broadcast.copy()
@@ -70,5 +73,3 @@ def test_share_keys(key_broadcast):
 
     with pytest.raises(ValueError):
         seed, msg = protocol.process_key_broadcast("test", keys[0], wrong_num_keys)
-
-

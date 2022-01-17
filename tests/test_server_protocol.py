@@ -1,4 +1,4 @@
-from protocol.server import ServerProtocol
+from protocol import ServerProtocol
 from protocol.models.client_keys import ClientKeys
 from protocol.models.server_messages import BroadCastClientKeys, ServerKeyBroadcast
 
