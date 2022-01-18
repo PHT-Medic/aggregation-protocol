@@ -1,6 +1,8 @@
 import os
 from typing import Tuple, List
 
+import numpy as np
+
 from protocol.models import HexString
 from protocol.models.client_keys import ClientKeys
 from protocol.models.secrets import SecretShares, EncryptedCipher
@@ -19,7 +21,11 @@ class ClientProtocol:
         keys = ClientKeys()
         return keys, keys.key_broadcast()
 
-    def process_key_broadcast(self, user_id: str, keys: ClientKeys, broadcast: ServerKeyBroadcast, k: int = 3):
+    def process_key_broadcast(self,
+                              user_id: str,
+                              keys: ClientKeys,
+                              broadcast: ServerKeyBroadcast,
+                              k: int = 3):
         if len(broadcast.participants) < k:
             raise ValueError("Not enough participants")
         self._validate_broadcast(broadcast)
@@ -39,9 +45,13 @@ class ClientProtocol:
                                  keys: ClientKeys,
                                  broadcast: ServerCipherBroadcast,
                                  participants: List[BroadCastClientKeys],
-                                 mask_size: int,
+                                 input: np.ndarray,
                                  seed: str,
+                                 k: int = 3
                                  ) -> MaskedInput:
+
+        if len(broadcast.ciphers) < k:
+            raise ValueError(f"Not enough ciphers collected - ({len(broadcast.ciphers)}/{k})")
 
         # filter round 2 participants
         round_2_ids = [cipher.sender for cipher in broadcast.ciphers]
@@ -50,9 +60,11 @@ class ClientProtocol:
         mask = create_mask(user_id=user_id,
                            user_keys=keys,
                            participants=round_2_participants,
-                           n_params=mask_size,
+                           n_params=len(input),
                            seed=seed
                            )
+
+        masked_input = mask + input
 
         return MaskedInput(user_id=user_id, masked_input=list(mask))
 
