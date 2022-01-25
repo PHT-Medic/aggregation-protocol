@@ -30,3 +30,20 @@ class UserCipher(BaseModel):
 
 class ServerCipherBroadcast(BaseModel):
     ciphers: List[UserCipher]
+
+
+class Round4Participant(BaseModel):
+    """
+    Broadcast the ciphers of users registered in round 1 of the protocol.
+    """
+
+    user_id: Union[int, str]
+    signature: Optional[HexString] = None
+
+
+class ServerUnmaskBroadCast(BaseModel):
+    """
+    Broadcast the participants of round 4 of the protocol to the users
+    """
+
+    participants: List[Round4Participant]

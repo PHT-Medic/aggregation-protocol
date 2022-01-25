@@ -45,8 +45,8 @@ def generate_user_masks(user_id: str, user_keys: ClientKeys, participants: List[
             else:
                 mask_multiplier = None
             # load public key from broadcast
-            public_key = load_public_key(participant.broadcast.cipher_public_key)
-            mask = _generate_shared_mask(user_keys.cipher_key, public_key, n_params, mask_multiplier)
+            public_key = load_public_key(participant.broadcast.sharing_public_key)
+            mask = _generate_shared_mask(user_keys.sharing_key, public_key, n_params, mask_multiplier)
 
             masks.append(SharedMask(sender=user_id, recipient=participant.user_id, mask=mask))
     return masks

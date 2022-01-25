@@ -29,6 +29,7 @@ def generate_encrypted_cipher(sender: str,
     )
     cypher_bytes = cipher.json().encode("utf-8")
     encrypted_cypher = fernet.encrypt(cypher_bytes)
+    del fernet
 
     return encrypted_cypher.hex()
 

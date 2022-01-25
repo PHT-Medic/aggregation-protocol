@@ -2,7 +2,7 @@ from typing import Optional, List, Union
 
 from pydantic import BaseModel
 
-from protocol.models.secrets import EncryptedCipher
+from protocol.models.secrets import EncryptedCipher, KeyShare, SeedShare
 
 
 class ClientKeyBroadCast(BaseModel):
@@ -31,3 +31,27 @@ class MaskedInput(BaseModel):
     """
     user_id: str
     masked_input: List[float]
+
+
+class UnmaskKeyShare(BaseModel):
+    """
+    The unmask key share message is sent by the client to the server.
+    The client sends the key share to the server.
+    """
+    user_id: str
+    key_share: KeyShare
+
+
+class UnmaskSeedShare(BaseModel):
+    """
+    The unmask key share message is sent by the client to the server.
+    The client sends the key share to the server.
+    """
+    user_id: str
+    seed_share: SeedShare
+
+
+class UnmaskShares(BaseModel):
+    user_id: str
+    key_shares: List[UnmaskKeyShare]
+    seed_shares: List[UnmaskSeedShare]

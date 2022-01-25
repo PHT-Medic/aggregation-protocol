@@ -5,6 +5,7 @@ from protocol.models.secrets import Cipher
 from protocol.secrets.secret_sharing import create_secret_shares
 from protocol.models.server_messages import ServerKeyBroadcast, BroadCastClientKeys
 from protocol.models.client_messages import ShareKeysMessage
+from protocol.secrets.util import load_public_key
 
 
 def test_ciphers():
@@ -38,7 +39,7 @@ def test_ciphers():
     decrypted_cipher = decrypt_cipher(
         recipient=receiver,
         recipient_key=keys_2.cipher_key,
-        sender_key=keys_1.cipher_key_public,
+        sender_key=load_public_key(broadcast_1.cipher_public_key),
         sender=sender,
         encrypted_cypher=cipher.cipher
     )
