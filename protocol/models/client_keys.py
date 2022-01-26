@@ -36,7 +36,8 @@ class ClientKeys:
 
         # validate signing and verification key arguments
         if not (signing_key or verification_keys):
-            print("No signing or verification keys given, protocol not secure against adversarial server")
+            # print("No signing or verification keys given, protocol not secure against adversarial server")
+            pass
         elif signing_key and not verification_keys:
             raise ValueError("Signing key given but no verification keys")
         elif not signing_key and verification_keys:

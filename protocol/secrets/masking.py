@@ -29,8 +29,7 @@ def generate_user_masks(private_mask: np.ndarray, user_id: str, user_keys: Clien
                         n_params: int) -> np.ndarray:
     user_index = len(participants)
     for i, participant in enumerate(participants):
-        # set the user index when the id matches the broadcast
-        print(user_id, participant.user_id)
+        # set the user index when the id matches the broadcast id
         if participant.user_id == user_id:
             user_index = i
 
@@ -40,9 +39,7 @@ def generate_user_masks(private_mask: np.ndarray, user_id: str, user_keys: Clien
             # multiplier for mask based on index in list
             if i > user_index:
                 private_mask -= generate_shared_mask(user_keys.sharing_key, public_key, n_params)
-                print("subtracting mask")
             else:
-                print("adding mask")
                 private_mask += generate_shared_mask(user_keys.sharing_key, public_key, n_params)
 
     return private_mask
