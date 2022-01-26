@@ -1,4 +1,8 @@
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
+from datetime import datetime
 
 from protocol import ClientProtocol, ServerProtocol
 from time import perf_counter
@@ -134,16 +138,94 @@ def benchmark(n_clients: int = 100, input_size: int = 10000, iterations: int = 1
         server_aggregate_end = perf_counter()
         server_aggregate_time += server_aggregate_end - server_aggregate_start
 
-    print(f"Client setup time: {setup_time / (iterations * n_clients)}")
-    print(f"Client key broadcast time: {client_key_broadcast_time / (iterations * n_clients)}")
-    print(f"Server key broadcast time: {server_key_broadcast_time / iterations}")
-    print(f"Client key share time: {client_key_share_time / (iterations * n_clients)}")
-    print(f"Server cipher distribution time: {server_cipher_distribution_time / (iterations * n_clients)}")
-    print(f"Client masked input time: {client_masked_input_time / (iterations * n_clients)}")
-    print(f"Server mask collection time: {server_mask_collection_time / iterations}")
-    print(f"Client process unmask broadcast time: {client_process_unmask_broadcast_time / (iterations * n_clients)}")
-    print(f"Server aggregate time: {server_aggregate_time / iterations}")
+    results = {
+        "n_clients": n_clients,
+        "input_size": input_size,
+        "client_setup_time": setup_time / (iterations * n_clients),
+        "client_key_broadcast_time": client_key_broadcast_time / (iterations * n_clients),
+        "client_key_share_time": client_key_share_time / (iterations * n_clients),
+        "client_masked_input_time": client_masked_input_time / (iterations * n_clients),
+        "client_process_unmask_broadcast_time": client_process_unmask_broadcast_time / (iterations * n_clients),
+        "server_key_broadcast_time": server_key_broadcast_time / iterations,
+        "server_cipher_distribution_time": server_cipher_distribution_time / (iterations * n_clients),
+        "server_mask_collection_time": server_mask_collection_time / iterations,
+        "server_aggregation_time": server_aggregate_time / iterations,
+    }
+    print("Results:")
+    print(f"Client setup time: {results['client_setup_time']}")
+    print(f"Client key broadcast time: {results['client_key_broadcast_time']}")
+    print(f"Server key broadcast time: {results['server_key_broadcast_time']}")
+    print(f"Client key share time: {results['client_key_share_time']}")
+    print(f"Server cipher distribution time: {results['server_cipher_distribution_time']}")
+    print(f"Client masked input time: {results['client_masked_input_time']}")
+    print(f"Server mask collection time: {results['server_mask_collection_time']}")
+    print(f"Client process unmask broadcast time: {results['client_process_unmask_broadcast_time']}")
+    print(f"Server aggregate time: {results['server_aggregation_time']}")
+    print(results)
+    return results
+
+
+def benchmark_n_clients():
+    clients = [3, 5, 10, 15, 20, 30, 35, 40, 45, 50]
+    results = {}
+    input_size = 10000
+    for n_clients in clients:
+        print(f"\nRunning protocol with {n_clients} clients")
+        print()
+        result = benchmark(n_clients=n_clients, iterations=1, input_size=input_size)
+        results[n_clients] = result
+
+    results_df = pd.DataFrame(results).T
+
+    now = datetime.now()
+    date = now.strftime("%Y-%m-%d")
+    results_df.to_csv(f"no_dropouts_benchmark_n_clients_{date}.csv")
+    results_df.drop(columns=["input_size"], inplace=True)
+    processed_df = pd.melt(results_df, id_vars=["n_clients"])
+    print(processed_df.columns)
+
+    sns.set(rc={'figure.figsize': (15, 8)})
+
+    line_plot = sns.lineplot(data=processed_df, hue="variable", x="n_clients", y="value")
+
+    plt.legend(loc="upper left")
+    plt.ylabel("time (s)")
+    plt.title(f"No dropouts benchmark n_clients - {date}")
+    fig = line_plot.get_figure()
+    fig.savefig(f"no_dropouts_benchmark_n_clients_{date}.png")
+    plt.show()
+
+
+def benchmark_input_size():
+    input_sizes = [1000, 10000, 100000, 1000000]
+    results = {}
+    for size in input_sizes:
+        print(f"\nRunning protocol with input size: {size}")
+        print()
+        result = benchmark(n_clients=20, iterations=1, input_size=size)
+        results[size] = result
+
+    results_df = pd.DataFrame(results).T
+
+    now = datetime.now()
+    date = now.strftime("%Y-%m-%d")
+    results_df.to_csv(f"no_dropouts_benchmark_input_size_{date}.csv")
+    results_df.drop(columns=["n_clients"], inplace=True)
+    processed_df = pd.melt(results_df, id_vars=["input_size"])
+
+    sns.set(rc={'figure.figsize': (15, 8)})
+
+    line_plot = sns.lineplot(data=processed_df, hue="variable", x="input_size", y="value")
+
+    plt.legend(loc="upper left")
+    plt.ylabel("time (s)")
+    plt.title(f"No dropouts benchmark input size - {date}")
+    fig = line_plot.get_figure()
+    fig.savefig(f"no_dropouts_benchmark_input_size_{date}.png")
+    plt.show()
 
 
 if __name__ == '__main__':
-    benchmark(n_clients=10, iterations=2)
+    # benchmark(n_clients=10, iterations=2)
+    benchmark_n_clients()
+    benchmark_input_size()
