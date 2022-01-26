@@ -5,6 +5,7 @@ from protocol.models.server_messages import ServerKeyBroadcast, BroadCastClientK
     ServerUnmaskBroadCast
 from protocol.models.client_keys import ClientKeys
 from protocol.secrets.ciphers import decrypt_cipher
+from protocol.secrets.masking import _generate_private_mask
 from protocol.secrets.util import load_public_key
 
 
@@ -124,23 +125,24 @@ def test_create_unmask_shares():
     user_2 = "test-user-2"
     user_3 = "test-user-3"
 
+    input_size = 1000
+
     # step through the server protocol and generate key broadcast
     server_protocol = ServerProtocol()
 
-    server_key_broadcast = server_protocol.broadcast_keys(
-        [BroadCastClientKeys(user_id=user_1, broadcast=broadcast_1),
-         BroadCastClientKeys(user_id=user_2, broadcast=broadcast_2),
-         BroadCastClientKeys(user_id=user_3, broadcast=broadcast_3)]
-    )
+    client_key_broadcasts = [BroadCastClientKeys(user_id=user_1, broadcast=broadcast_1),
+                             BroadCastClientKeys(user_id=user_2, broadcast=broadcast_2),
+                             BroadCastClientKeys(user_id=user_3, broadcast=broadcast_3)]
+    server_key_broadcast = server_protocol.broadcast_keys(client_key_broadcasts)
 
     assert len(server_key_broadcast.participants) == 3
 
     seed_1, share_msg_1 = client_protocol.process_key_broadcast(user_id=user_1, keys=keys_1,
-                                                                broadcast=server_key_broadcast, k=3)
+                                                                broadcast=server_key_broadcast, k=2)
     seed_2, share_msg_2 = client_protocol.process_key_broadcast(user_id=user_2, keys=keys_2,
-                                                                broadcast=server_key_broadcast, k=3)
+                                                                broadcast=server_key_broadcast, k=2)
     seed_3, share_msg_3 = client_protocol.process_key_broadcast(user_id=user_3, keys=keys_3,
-                                                                broadcast=server_key_broadcast, k=3)
+                                                                broadcast=server_key_broadcast, k=2)
 
     # test cipher decryption based on client messages
     decrypted_cipher = decrypt_cipher(
@@ -152,7 +154,6 @@ def test_create_unmask_shares():
     )
 
     assert decrypted_cipher
-    print("Client key share", share_msg_1)
 
     share_messages = [share_msg_1, share_msg_2, share_msg_3]
 
@@ -160,23 +161,38 @@ def test_create_unmask_shares():
     server_cipher_broadcast_2 = server_protocol.broadcast_cyphers(shared_ciphers=share_messages, user_id=user_2)
     server_cipher_broadcast_3 = server_protocol.broadcast_cyphers(shared_ciphers=share_messages, user_id=user_3)
 
-    print(server_cipher_broadcast_1.ciphers)
     mask_1 = client_protocol.process_cipher_broadcast(user_id=user_1, keys=keys_1,
                                                       participants=server_key_broadcast.participants,
-                                                      input=np.zeros(100), broadcast=server_cipher_broadcast_1,
+                                                      input=np.zeros(input_size),
+                                                      broadcast=server_cipher_broadcast_1,
                                                       seed=seed_1)
 
-    mask_2 = client_protocol.process_cipher_broadcast(user_id=user_1, keys=keys_1,
+    mask_2 = client_protocol.process_cipher_broadcast(user_id=user_2, keys=keys_2,
                                                       participants=server_key_broadcast.participants,
-                                                      input=np.zeros(100), broadcast=server_cipher_broadcast_2,
-                                                      seed=seed_1)
+                                                      input=np.zeros(input_size),
+                                                      broadcast=server_cipher_broadcast_2,
+                                                      seed=seed_2)
 
-    mask_3 = client_protocol.process_cipher_broadcast(user_id=user_1, keys=keys_1,
+    mask_3 = client_protocol.process_cipher_broadcast(user_id=user_3, keys=keys_3,
                                                       participants=server_key_broadcast.participants,
-                                                      input=np.zeros(100), broadcast=server_cipher_broadcast_3,
-                                                      seed=seed_1)
+                                                      input=np.zeros(input_size),
+                                                      broadcast=server_cipher_broadcast_3,
+                                                      seed=seed_3)
 
-    unmask_broadcast = server_protocol.broadcast_unmask_participants([mask_1, mask_2, mask_3])
+    masked_inputs = [mask_1, mask_2, mask_3]
+
+    masked_input_sum = np.zeros(input_size)
+    for mask in masked_inputs:
+        masked_input_sum += mask.masked_input
+
+    user_1_private_mask = _generate_private_mask(seed=seed_1, n_items=input_size)
+    user_2_private_mask = _generate_private_mask(seed=seed_2, n_items=input_size)
+    user_3_private_mask = _generate_private_mask(seed=seed_3, n_items=input_size)
+    removed_mask = masked_input_sum - user_1_private_mask - user_2_private_mask - user_3_private_mask
+
+    print(removed_mask.sum())
+
+    unmask_broadcast = server_protocol.broadcast_unmask_participants(masked_inputs)
 
     # too few participants
     with pytest.raises(ValueError):
@@ -215,3 +231,15 @@ def test_create_unmask_shares():
         unmask_broadcast=unmask_broadcast,
         cipher_broadcast=server_cipher_broadcast_3
     )
+
+    client_unmask_shares = [unmask_shares_1, unmask_shares_2, unmask_shares_3]
+
+
+
+    response = server_protocol.remove_user_masks(client_key_broadcasts=client_key_broadcasts,
+                                                 masked_inputs=masked_inputs,
+                                                 unmask_shares=client_unmask_shares)
+
+    assert np.round(np.sum(response), 10) == 0.0
+
+

@@ -59,11 +59,11 @@ class ClientProtocol:
 
         # filter round 2 participants
         round_2_ids = [cipher.sender for cipher in broadcast.ciphers]
-        round_2_participants = [p for p in participants if p.user_id in round_2_ids]
+        # round_2_participants = [p for p in participants if p.user_id in round_2_ids]
         # generate the mask for the round 2 participants
         mask = create_mask(user_id=user_id,
                            user_keys=keys,
-                           participants=round_2_participants,
+                           participants=participants,
                            n_params=len(input),
                            seed=seed
                            )
@@ -97,15 +97,16 @@ class ClientProtocol:
                 unmask_key_share = UnmaskKeyShare(user_id=share.sender, key_share=share.key_share)
                 unmask_shares.key_shares.append(unmask_key_share)
             # otherwise, add the seed share
-            else:
+            if share.sender in round_2_participants:
                 unmask_seed_share = UnmaskSeedShare(
                     user_id=share.sender,
                     seed_share=share.seed_share
                 )
                 unmask_shares.seed_shares.append(unmask_seed_share)
+            else:
+                raise ValueError(f"Unknown share sender {share.sender}")
         # return validated shares
         return UnmaskShares(**unmask_shares.dict())
-
 
     def _decrypt_ciphers(self, user_id: str, keys: ClientKeys, ciphers: List[UserCipher],
                          participants: List[BroadCastClientKeys]) -> List[Cipher]:
