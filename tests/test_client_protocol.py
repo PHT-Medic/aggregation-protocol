@@ -236,10 +236,10 @@ def test_create_unmask_shares():
 
 
 
-    response = server_protocol.remove_user_masks(client_key_broadcasts=client_key_broadcasts,
-                                                 masked_inputs=masked_inputs,
-                                                 unmask_shares=client_unmask_shares)
+    response = server_protocol.aggregate_masked_inputs(client_key_broadcasts=client_key_broadcasts,
+                                                       masked_inputs=masked_inputs,
+                                                       unmask_shares=client_unmask_shares)
 
-    assert np.round(np.sum(response), 10) == 0.0
+    assert np.round(np.sum(response.params), 10) == 0.0
 
 

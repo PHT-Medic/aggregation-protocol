@@ -6,7 +6,7 @@ from protocol.models.secrets import SeedShare
 from protocol.secrets.masking import integer_seed_from_hex, expand_seed, generate_shared_mask
 from protocol.secrets.secret_sharing import combine_key_shares, combine_seed_shares
 from protocol.models.server_messages import (ServerKeyBroadcast, BroadCastClientKeys, ServerCipherBroadcast, UserCipher,
-                                             Round4Participant, ServerUnmaskBroadCast)
+                                             Round4Participant, ServerUnmaskBroadCast, AggregatedParameters)
 from protocol.models.client_messages import ShareKeysMessage, MaskedInput, UnmaskShares, UnmaskSeedShare, UnmaskKeyShare
 from protocol.secrets.util import load_public_key
 
@@ -43,8 +43,9 @@ class ServerProtocol:
         participants = [Round4Participant(user_id=mask_in.user_id) for mask_in in masked_inputs]
         return ServerUnmaskBroadCast(participants=participants)
 
-    def remove_user_masks(self, client_key_broadcasts: List[BroadCastClientKeys], masked_inputs: List[MaskedInput],
-                          unmask_shares: List[UnmaskShares]) -> np.ndarray:
+    def aggregate_masked_inputs(self, client_key_broadcasts: List[BroadCastClientKeys],
+                                masked_inputs: List[MaskedInput],
+                                unmask_shares: List[UnmaskShares]) -> AggregatedParameters:
 
         # todo recover mask seeds for users that submitted them
 
@@ -64,7 +65,8 @@ class ServerProtocol:
         unmasked_sum = masked_sum - reverse_mask
         if reverse_shared_mask:
             unmasked_sum += reverse_shared_mask
-        return unmasked_sum
+
+        return AggregatedParameters(params=list(unmasked_sum))
 
     def _generate_reverse_mask(self,
                                seed_shares: List[UnmaskSeedShare],

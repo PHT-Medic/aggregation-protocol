@@ -47,3 +47,11 @@ class ServerUnmaskBroadCast(BaseModel):
     """
 
     participants: List[Round4Participant]
+
+
+class AggregatedParameters(BaseModel):
+    """
+    Broadcast the aggregated parameters of the protocol to the users
+    """
+
+    params: List[float]
