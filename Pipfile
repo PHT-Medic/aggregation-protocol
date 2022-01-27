@@ -15,6 +15,7 @@ coverage = "*"
 flake8 = "*"
 pandas = "*"
 seaborn = "*"
+bump2version = "*"
 
 [requires]
 python_version = "3.9"

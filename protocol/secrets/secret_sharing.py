@@ -3,7 +3,7 @@ from Crypto.Protocol.SecretSharing import Shamir
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKeyWithSerialization as ECPrivateKey
 from cryptography.hazmat.primitives import serialization
 
-from protocol.models import HexString
+
 from protocol.models.secrets import SecretShares, KeyShare, SeedShare
 
 # Number of sharing key chunks

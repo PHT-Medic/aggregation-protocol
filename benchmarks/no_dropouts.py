@@ -1,3 +1,5 @@
+import os.path
+
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -91,7 +93,7 @@ def benchmark(n_clients: int = 100, input_size: int = 10000, iterations: int = 1
             client_masked_input_start = perf_counter()
             masked_input = client_protocol.process_cipher_broadcast(
                 user_id=user_id,
-                broadcast=server_cipher_broadcast,
+                cipher_broadcast=server_cipher_broadcast,
                 seed=seeds[c],
                 input=np.zeros(input_size),
                 participants=server_key_broadcast.participants,
@@ -179,7 +181,7 @@ def benchmark_n_clients():
 
     now = datetime.now()
     date = now.strftime("%Y-%m-%d")
-    results_df.to_csv(f"no_dropouts_benchmark_n_clients_{date}.csv")
+    results_df.to_csv(f"results/no_dropouts_benchmark_n_clients_{date}.csv")
     results_df.drop(columns=["input_size"], inplace=True)
     processed_df = pd.melt(results_df, id_vars=["n_clients"])
     print(processed_df.columns)
@@ -192,7 +194,7 @@ def benchmark_n_clients():
     plt.ylabel("time (s)")
     plt.title(f"No dropouts benchmark n_clients - {date}")
     fig = line_plot.get_figure()
-    fig.savefig(f"no_dropouts_benchmark_n_clients_{date}.png")
+    fig.savefig(f"results/no_dropouts_benchmark_n_clients_{date}.png")
     plt.show()
 
 
@@ -209,7 +211,7 @@ def benchmark_input_size():
 
     now = datetime.now()
     date = now.strftime("%Y-%m-%d")
-    results_df.to_csv(f"no_dropouts_benchmark_input_size_{date}.csv")
+    results_df.to_csv(f"results/no_dropouts_benchmark_input_size_{date}.csv")
     results_df.drop(columns=["n_clients"], inplace=True)
     processed_df = pd.melt(results_df, id_vars=["input_size"])
 
@@ -221,11 +223,13 @@ def benchmark_input_size():
     plt.ylabel("time (s)")
     plt.title(f"No dropouts benchmark input size - {date}")
     fig = line_plot.get_figure()
-    fig.savefig(f"no_dropouts_benchmark_input_size_{date}.png")
+    fig.savefig(f"results/no_dropouts_benchmark_input_size_{date}.png")
     plt.show()
 
 
 if __name__ == '__main__':
+    if not os.path.isdir("results"):
+        os.mkdir("results")
     # benchmark(n_clients=10, iterations=2)
     benchmark_n_clients()
     benchmark_input_size()

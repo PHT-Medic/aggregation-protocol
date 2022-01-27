@@ -1,3 +1,5 @@
+from sys import version
+
 from setuptools import setup, find_packages
 
 setup(
@@ -18,8 +20,8 @@ setup(
         "pydantic",
         "cryptography"
     ],
+    version="0.0.0",
     license="MIT license",
     packages=find_packages(),
     name="pht_aggregation_protocol",
-
 )

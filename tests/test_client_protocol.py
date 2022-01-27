@@ -106,7 +106,7 @@ def test_masking(cipher_broadcast):
                                              keys=user_key_0,
                                              participants=broadcast.participants,
                                              input=np.zeros(100),
-                                             broadcast=server_broadcast,
+                                             cipher_broadcast=server_broadcast,
                                              seed=seeds[0]
                                              )
 
@@ -164,19 +164,19 @@ def test_create_unmask_shares():
     mask_1 = client_protocol.process_cipher_broadcast(user_id=user_1, keys=keys_1,
                                                       participants=server_key_broadcast.participants,
                                                       input=np.zeros(input_size),
-                                                      broadcast=server_cipher_broadcast_1,
+                                                      cipher_broadcast=server_cipher_broadcast_1,
                                                       seed=seed_1)
 
     mask_2 = client_protocol.process_cipher_broadcast(user_id=user_2, keys=keys_2,
                                                       participants=server_key_broadcast.participants,
                                                       input=np.zeros(input_size),
-                                                      broadcast=server_cipher_broadcast_2,
+                                                      cipher_broadcast=server_cipher_broadcast_2,
                                                       seed=seed_2)
 
     mask_3 = client_protocol.process_cipher_broadcast(user_id=user_3, keys=keys_3,
                                                       participants=server_key_broadcast.participants,
                                                       input=np.zeros(input_size),
-                                                      broadcast=server_cipher_broadcast_3,
+                                                      cipher_broadcast=server_cipher_broadcast_3,
                                                       seed=seed_3)
 
     masked_inputs = [mask_1, mask_2, mask_3]
